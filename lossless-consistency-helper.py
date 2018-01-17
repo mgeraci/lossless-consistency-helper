@@ -54,6 +54,7 @@ def check_for_cover(items):
 # script
 # ------------------------------------------------------------------------------
 
+output_dir = os.path.dirname(os.path.realpath(__file__))
 path = '/Volumes/Lossless/Lossless'
 res = {
     'albums': {},
@@ -111,4 +112,16 @@ for image in images:
         add_error_to_res('image', image, filename_check['error'])
 '''
 
-print res['images']
+# print res['images']
+
+
+# write the output
+# ------------------------------------------------------------------------------
+
+print output_dir
+
+with open('{}/output.txt'.format(output_dir), 'w') as f:
+    for section in res:
+        f.write('{}\n'.format(section))
+        f.write('----------------------------\n')
+        f.write('\n')
