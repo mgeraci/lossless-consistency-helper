@@ -37,12 +37,24 @@ def check_album_folder(path):
             'error': 'Bad album folder name'
         }
 
+def check_for_cover(items):
+    has_png = 'cover.png' in items
+    has_jpg = 'cover.jpg' in items
+    has_jpeg = 'cover.jpeg' in items
+
+    if has_png or has_jpg or has_jpeg:
+        return { 'success': True }
+    else:
+        return {
+            'success': False,
+            'error': 'Missing cover image'
+        }
+
 
 # script
 # ------------------------------------------------------------------------------
 
 path = '/Volumes/Lossless/Lossless'
-images = []
 res = {
     'albums': {},
     'empty': {},
@@ -54,14 +66,12 @@ print 'x hey there x'
 print 'xxxxxxxxxxxxx'
 print ''
 
-
-print 'Finding images...'
-
 os.chdir(path)
 
 for root, dirnames, filenames in os.walk(path, topdown=True):
     depth = root[len(path) + len(os.path.sep):].count(os.path.sep)
 
+    # albums
     if depth == 0:
         if len(dirnames) == 0:
             add_error_to_res('empty', root, 'Empty folder')
@@ -72,6 +82,15 @@ for root, dirnames, filenames in os.walk(path, topdown=True):
                 if not album_check['success']:
                     full_path = '{}/{}'.format(root, album)
                     add_error_to_res('albums', full_path, album_check['error'])
+
+    # songs / art
+    if depth == 1:
+        # print filenames
+        has_cover_check = check_for_cover(filenames)
+
+        if not has_cover_check['success']:
+            add_error_to_res('images', root, has_cover_check['error'])
+
 
     '''
     for filename in filenames:
@@ -84,16 +103,12 @@ for root, dirnames, filenames in os.walk(path, topdown=True):
     '''
 
 
-print '{} images found'.format(len(images))
-print ''
-
-
-print 'Looking for images named something other than "cover"...'
-
+'''
 for image in images:
     filename_check = check_filename(image)
 
     if not filename_check['success']:
         add_error_to_res('image', image, filename_check['error'])
+'''
 
-print res
+print res['images']
