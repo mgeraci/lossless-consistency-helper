@@ -5,6 +5,14 @@ import re
 import os
 
 
+# "constants"
+# ------------------------------------------------------------------------------
+
+output_dir = os.path.dirname(os.path.realpath(__file__))
+music_location = '/Volumes/Lossless/Lossless'
+min_cover_dimension = 800
+
+
 # helpers
 # ------------------------------------------------------------------------------
 
@@ -18,20 +26,6 @@ def add_error_to_res(section, key, error):
 
     res[section][key].append(error)
 
-
-def check_filename(path):
-    is_good_png = 'cover.png' in path
-    is_good_jpg = 'cover.jpg' in path
-    is_good_jpeg = 'cover.jpeg' in path
-
-    if is_good_png or is_good_jpg or is_good_jpeg:
-        return { 'success': True }
-    else:
-        return {
-            'success': False,
-            'error': 'Bad filename'
-        }
-
 def check_album_folder(path):
     if re.search("^\d{4} - .+", path):
         return { 'success': True }
@@ -42,24 +36,50 @@ def check_album_folder(path):
         }
 
 def check_for_cover(items):
-    has_png = 'cover.png' in items
-    has_jpg = 'cover.jpg' in items
-    has_jpeg = 'cover.jpeg' in items
+    success = False
 
-    if has_png or has_jpg or has_jpeg:
-        return { 'success': True }
+    if 'cover.png' in items:
+        success = 'cover.png'
+    elif 'cover.jpg' in items:
+        success = 'cover.jpg'
+    elif 'cover.jpeg' in items:
+        success = 'cover.jpeg'
+
+    if success:
+        return {
+            'success': True,
+            'filename': success,
+        }
     else:
         return {
             'success': False,
             'error': 'Missing cover image'
         }
 
+def check_image_size(image):
+    i = Image.open(image)
+
+    errors = []
+
+    if i.size[0] != i.size[1]:
+        errors.append('Image not square')
+
+    if i.size[0] < min_cover_dimension or i.size[1] < min_cover_dimension:
+        errors.append('Image too small')
+
+    if len(errors):
+        return {
+            'success': False,
+            'error': errors,
+        }
+    else:
+        return { 'success': True }
+
 
 # script
 # ------------------------------------------------------------------------------
 
-output_dir = os.path.dirname(os.path.realpath(__file__))
-music_location = '/Volumes/Lossless/Lossless'
+images = []
 res = {
     'albums': {},
     'empty': {},
@@ -74,7 +94,7 @@ print ''
 
 os.chdir(music_location)
 
-print 'Checking for missing covers, poorly formatted album covers, and empty folders...'
+print 'Checking for missing covers, poorly formatted album folders, and empty folders...'
 
 for root, dirnames, filenames in os.walk(music_location, topdown=True):
     depth = get_depth(music_location, root)
@@ -99,28 +119,19 @@ for root, dirnames, filenames in os.walk(music_location, topdown=True):
     if depth == 2:
         has_cover_check = check_for_cover(filenames)
 
-        if not has_cover_check['success']:
+        if has_cover_check['success']:
+            images.append('{}/{}'.format(root, has_cover_check['filename']))
+        else:
             add_error_to_res('images', root, has_cover_check['error'])
 
 
-    '''
-    for filename in filenames:
-        is_png = '.png' in filename
-        is_jpg = '.jpg' in filename
-        is_jpeg = '.jpeg' in filename
+print 'Checking the {} properly named images found for resolution and aspect ratio...'.format(len(images))
 
-        if is_png or is_jpg or is_jpeg:
-            images.append(os.path.join(root, filename))
-    '''
-
-
-'''
 for image in images:
-    filename_check = check_filename(image)
+    image_check = check_image_size(image)
 
-    if not filename_check['success']:
-        add_error_to_res('image', image, filename_check['error'])
-'''
+    if not image_check['success']:
+        add_error_to_res('images', image, image_check['error'])
 
 
 # write the output
