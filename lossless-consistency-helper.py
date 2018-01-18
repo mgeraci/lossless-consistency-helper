@@ -8,11 +8,15 @@ import os
 # helpers
 # ------------------------------------------------------------------------------
 
-def add_error_to_res(style, key, error):
-    if not res[style].get(key):
-        res[style][key] = []
+def get_depth(root, path):
+    local_path = path.replace(root, '')
+    return local_path.count(os.path.sep)
 
-    res[style][key].append(error)
+def add_error_to_res(section, key, error):
+    if not res[section].get(key):
+        res[section][key] = []
+
+    res[section][key].append(error)
 
 
 def check_filename(path):
@@ -55,25 +59,32 @@ def check_for_cover(items):
 # ------------------------------------------------------------------------------
 
 output_dir = os.path.dirname(os.path.realpath(__file__))
-path = '/Volumes/Lossless/Lossless'
+music_location = '/Volumes/Lossless/Lossless'
 res = {
     'albums': {},
     'empty': {},
     'images': {},
 }
 
+print ''
 print 'xxxxxxxxxxxxx'
 print 'x hey there x'
 print 'xxxxxxxxxxxxx'
 print ''
 
-os.chdir(path)
+os.chdir(music_location)
 
-for root, dirnames, filenames in os.walk(path, topdown=True):
-    depth = root[len(path) + len(os.path.sep):].count(os.path.sep)
+print 'Checking for missing covers, poorly formatted album covers, and empty folders...'
+
+for root, dirnames, filenames in os.walk(music_location, topdown=True):
+    depth = get_depth(music_location, root)
+
+    # depth 0 = lossless root
+    # depth 1 = artist
+    # depth 2 = album
 
     # albums
-    if depth == 0:
+    if depth == 1:
         if len(dirnames) == 0:
             add_error_to_res('empty', root, 'Empty folder')
         else:
@@ -85,8 +96,7 @@ for root, dirnames, filenames in os.walk(path, topdown=True):
                     add_error_to_res('albums', full_path, album_check['error'])
 
     # songs / art
-    if depth == 1:
-        # print filenames
+    if depth == 2:
         has_cover_check = check_for_cover(filenames)
 
         if not has_cover_check['success']:
@@ -112,16 +122,23 @@ for image in images:
         add_error_to_res('image', image, filename_check['error'])
 '''
 
-# print res['images']
-
 
 # write the output
 # ------------------------------------------------------------------------------
-
-print output_dir
 
 with open('{}/output.txt'.format(output_dir), 'w') as f:
     for section in res:
         f.write('{}\n'.format(section))
         f.write('----------------------------\n')
         f.write('\n')
+
+        for path in res[section]:
+            errors = res[section][path]
+            f.write('{} {}\n'.format(path, errors))
+
+        f.write('\n')
+
+print ''
+print 'Done! Check your results in output.txt'
+print '<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3'
+print ''
