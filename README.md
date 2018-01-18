@@ -33,4 +33,4 @@ a square of at least 800x800px (this can be modified in the script).
 
 First, make sure you're in the virtualenv for this project with
 `workon lossless-consistency-helper`. Then you can run the script with
-`./lossless-image-helper.py`. It will write the results to output.txt.
+`./lossless-consistency-helper.py`. It will write the results to output.txt.
