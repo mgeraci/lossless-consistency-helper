@@ -57,7 +57,14 @@ def check_for_cover(items):
         }
 
 def check_image_size(image):
-    i = Image.open(image)
+    try:
+        i = Image.open(image)
+
+    except:
+        return {
+            'success': False,
+            'error': 'Could not open image file',
+        }
 
     errors = []
 
@@ -133,6 +140,8 @@ for image in images:
     if not image_check['success']:
         add_error_to_res('images', image, image_check['error'])
 
+    print("."),
+
 
 # write the output
 # ------------------------------------------------------------------------------
@@ -149,6 +158,7 @@ with open('{}/output.txt'.format(output_dir), 'w') as f:
 
         f.write('\n')
 
+print ''
 print ''
 print 'Done! Check your results in output.txt'
 print '<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3'
