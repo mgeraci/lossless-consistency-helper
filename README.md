@@ -31,6 +31,7 @@ a square of at least 800x800px (this can be modified in the script).
 
 ```
 MUSIC_LOCATION = '/michaels/sick/tunez'
+LAST_FM_API_KEY = '[get your key from the last.fm developer portal]'
 ```
 
 
