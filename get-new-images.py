@@ -15,7 +15,6 @@ from localsettings import MUSIC_LOCATION, LAST_FM_API_KEY
 
 output_dir = os.path.dirname(os.path.realpath(__file__))
 data_file = 'output.txt'
-import_file = '{}/{}'.format(output_dir, data_file)
 api_url = 'http://ws.audioscrobbler.com/2.0/?method=album.getinfo&format=json'
 request_sleep = 5
 json_parsing_codes = {
@@ -111,6 +110,13 @@ def get_image_url_from_json(api_response):
 # the script
 # ------------------------------------------------------------------------------
 
+# get the data file
+if len(sys.argv) == 1:
+    print ''
+    print 'This script must be passed a file to read data from, like `./get-new-images.py data.txt`'
+    print ''
+    sys.exit()
+
 res = {}
 
 print ''
@@ -118,12 +124,14 @@ print 'COVER IMAGE FETCHING TIME'
 print '-------------------------'
 print ''
 
+import_file = '{}/{}'.format(output_dir, sys.argv[1])
+
 print 'reading {} for data...'.format(import_file)
 
 try:
     data = json.load(open(import_file))
 except:
-    print 'output.txt was not found in this directory. did you run lossless-consistency-helper.py first?'
+    print 'Your passed data file was either not found or corrupt.'
     sys.exit()
 
 for image in data['images']:
