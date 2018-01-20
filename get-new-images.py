@@ -5,6 +5,8 @@ import os
 import sys
 import re
 import urllib
+import time
+import requests
 from localsettings import MUSIC_LOCATION, LAST_FM_API_KEY
 
 
@@ -15,6 +17,11 @@ output_dir = os.path.dirname(os.path.realpath(__file__))
 data_file = 'output.txt'
 import_file = '{}/{}'.format(output_dir, data_file)
 api_url = 'http://ws.audioscrobbler.com/2.0/?method=album.getinfo&format=json'
+request_sleep = 5
+json_parsing_codes = {
+    'success': 0,
+    'failure': 1,
+}
 
 
 # helpers
@@ -62,6 +69,44 @@ def get_request_url(name_list):
 
     return res
 
+def get_request_json(url):
+    '''
+    Hit the given url and parse its response as json.
+
+    @param {str} url - the url
+    @return {dict} - the json returned by the url
+    '''
+
+    response = requests.get(url)
+    return response.json()
+
+def get_image_url_from_json(api_response):
+    '''
+    Given a response from the lastfm api, get an image url.
+
+    @param {dict} api_response - a dict of info from the lastfm api
+    @return {dict} res - a dictionary with the results
+    @return {number} res.code - a number indicating the success or failure
+    @return {str} [res.result] - the result, if successful
+    @return {str} [res.message] - an error message, if failure
+    '''
+
+    try:
+        images = api_response['album']['image']
+        image = [i for i in images if i['size'] == 'mega'][0]
+        image = image['#text']
+        image = re.sub(r'\/\d{3}x\d{3}', '', image)
+    except:
+        return {
+            'code': json_parsing_codes['failure'],
+            'message': 'getting the image url from the api json failed'
+        }
+
+    return {
+        'code': json_parsing_codes['success'],
+        'result': image,
+    }
+
 
 # the script
 # ------------------------------------------------------------------------------
@@ -83,4 +128,8 @@ for image in data['images']:
     name_list = get_name_list_from_filename(image)
     request_url = get_request_url(name_list)
 
-    print request_url
+    print 'requesting {} - {}'.format(name_list[0], name_list[1])
+
+
+    time.sleep(request_sleep)
+
