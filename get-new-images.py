@@ -16,11 +16,7 @@ from localsettings import MUSIC_LOCATION, LAST_FM_API_KEY
 output_dir = os.path.dirname(os.path.realpath(__file__))
 data_file = 'output.txt'
 api_url = 'http://ws.audioscrobbler.com/2.0/?method=album.getinfo&format=json'
-request_sleep = 5
-json_parsing_codes = {
-    'success': 0,
-    'failure': 1,
-}
+request_sleep = 1
 
 
 # helpers
@@ -47,6 +43,9 @@ def get_name_list_from_filename(path):
     # scrub the year from the album name
     res[1] = re.sub(r'\d{4} - ', '', res[1])
 
+    # some albums have "(Disc 1)" or "(Bonus disc)", etc.; kill those
+    res[1] = re.sub(r'\((Disc|Bonus|Live).+?\)', '', res[1])
+
     return res
 
 def get_request_url(artist, album):
@@ -59,7 +58,6 @@ def get_request_url(artist, album):
     '''
 
     # we need to add 3 things to the root url: api_key, artist, and album
-
     res = '{}&api_key={}&artist={}&album={}'.format(
         api_url,
         LAST_FM_API_KEY,
@@ -85,7 +83,7 @@ def get_image_url_from_json(api_response):
 
     @param {dict} api_response - a dict of info from the lastfm api
     @return {dict} res - a dictionary with the results
-    @return {number} res.code - a number indicating the success or failure
+    @return {number} res.success - a number indicating the success or failure
     @return {str} [res.result] - the result, if successful
     @return {str} [res.message] - an error message, if failure
     '''
@@ -97,12 +95,12 @@ def get_image_url_from_json(api_response):
         image = re.sub(r'\/\d{3}x\d{3}', '', image)
     except:
         return {
-            'code': json_parsing_codes['failure'],
+            'success': False,
             'message': 'getting the image url from the api json failed'
         }
 
     return {
-        'code': json_parsing_codes['success'],
+        'success': True,
         'result': image,
     }
 
@@ -118,7 +116,7 @@ if len(sys.argv) == 1:
     sys.exit()
 
 res = {}
-has_had_error = False
+got_rate_limited = False
 
 print ''
 print 'COVER IMAGE FETCHING TIME'
@@ -142,22 +140,26 @@ for image in data['images']:
     request_url = get_request_url(artist, album)
 
     print u'{} {} - {}'.format(
-        'Skipping' if has_had_error else 'Requesting',
+        'Skipping' if got_rate_limited else 'Requesting',
         artist,
         album)
 
-    if has_had_error:
+    if got_rate_limited:
         res[image] = {
             'success': False,
             'message': 'Skipped by the script after an api error',
         }
     else:
-        #  api_res = make_json_request(request_url)
-        api_res = {"error": 10, "message": "Invalid API key - You must be granted a valid key by last.fm"}
+        api_res = make_json_request(request_url)
 
-        if api_res['error']:
-            has_had_error = True
-            print '- error; skipping the rest'
+        if api_res.get('error'):
+            if api_res['error'] == 10:
+                got_rate_limited = True
+                print '- rate limit error; skipping the rest'
+            elif api_res['error'] == 6:
+                print '- no album match'
+            else:
+                print '- api error {}, see https://www.last.fm/api/errorcodes'.format(api_res['error'])
 
             res[image] = {
                 'success': False,
@@ -167,11 +169,11 @@ for image in data['images']:
         else:
             print '- ok'
 
-            res[image] = {}
+            res[image] = get_image_url_from_json(api_res)
 
-        # sleep in between api requests to not get rate limited
-        if not has_had_error:
-            time.sleep(request_sleep)
+            # sleep in between api requests to not get rate limited
+            if not got_rate_limited:
+                time.sleep(request_sleep)
 
 
 # write the output
