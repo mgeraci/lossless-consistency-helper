@@ -111,6 +111,8 @@ def get_image_url_from_json(api_response):
 # the script
 # ------------------------------------------------------------------------------
 
+res = {}
+
 print ''
 print 'COVER IMAGE FETCHING TIME'
 print '-------------------------'
@@ -133,3 +135,9 @@ for image in data['images']:
 
     time.sleep(request_sleep)
 
+
+# write the output
+# ------------------------------------------------------------------------------
+
+with open('{}/get-new-images-output.txt'.format(output_dir), 'w') as f:
+    json.dump(res, f)

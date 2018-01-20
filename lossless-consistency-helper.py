@@ -145,7 +145,7 @@ for image in images:
 # write the output
 # ------------------------------------------------------------------------------
 
-with open('{}/output.txt'.format(output_dir), 'w') as f:
+with open('{}/lossless-consistency-helper-output.txt'.format(output_dir), 'w') as f:
     json.dump(res, f)
 
 print ''

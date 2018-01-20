@@ -1,4 +1,6 @@
 output.txt
+get-new-images-output.txt
+lossless-consistency-helper-output.txt
 .DS_Store
 *.pyc
 localsettings.py
