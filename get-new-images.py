@@ -49,11 +49,12 @@ def get_name_list_from_filename(path):
 
     return res
 
-def get_request_url(name_list):
+def get_request_url(artist, album):
     '''
     Create a request url for the last.fm api from an [artist, album] list.
 
-    @param {list} name_list - a list of [artist, album]
+    @param {str} artist - the album's artist
+    @param {str} album - the artist's album
     @return {str} - the request url
     '''
 
@@ -62,13 +63,12 @@ def get_request_url(name_list):
     res = '{}&api_key={}&artist={}&album={}'.format(
         api_url,
         LAST_FM_API_KEY,
-        urllib.quote(name_list[0].encode('utf-8')),
-        urllib.quote(name_list[1].encode('utf-8')),
-        )
+        urllib.quote(artist.encode('utf-8')),
+        urllib.quote(album.encode('utf-8')))
 
     return res
 
-def get_request_json(url):
+def make_json_request(url):
     '''
     Hit the given url and parse its response as json.
 
@@ -118,11 +118,13 @@ if len(sys.argv) == 1:
     sys.exit()
 
 res = {}
+has_had_error = False
 
 print ''
 print 'COVER IMAGE FETCHING TIME'
 print '-------------------------'
 print ''
+
 
 import_file = '{}/{}'.format(output_dir, sys.argv[1])
 
@@ -134,14 +136,42 @@ except:
     print 'Your passed data file was either not found or corrupt.'
     sys.exit()
 
+
 for image in data['images']:
-    name_list = get_name_list_from_filename(image)
-    request_url = get_request_url(name_list)
+    artist, album = get_name_list_from_filename(image)
+    request_url = get_request_url(artist, album)
 
-    print 'requesting {} - {}'.format(name_list[0], name_list[1])
+    print u'{} {} - {}'.format(
+        'Skipping' if has_had_error else 'Requesting',
+        artist,
+        album)
 
+    if has_had_error:
+        res[image] = {
+            'success': False,
+            'message': 'Skipped by the script after an api error',
+        }
+    else:
+        #  api_res = make_json_request(request_url)
+        api_res = {"error": 10, "message": "Invalid API key - You must be granted a valid key by last.fm"}
 
-    time.sleep(request_sleep)
+        if api_res['error']:
+            has_had_error = True
+            print '- error; skipping the rest'
+
+            res[image] = {
+                'success': False,
+                'message': 'Api error',
+                'data': api_res,
+            }
+        else:
+            print '- ok'
+
+            res[image] = {}
+
+        # sleep in between api requests to not get rate limited
+        if not has_had_error:
+            time.sleep(request_sleep)
 
 
 # write the output
