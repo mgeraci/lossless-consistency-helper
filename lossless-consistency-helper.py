@@ -150,7 +150,7 @@ with open('{}/output.txt'.format(output_dir), 'w') as f:
         f.write('----------------------------\n')
         f.write('\n')
 
-        for path in res[section]:
+        for path in sorted(res[section]):
             errors = res[section][path]
             f.write('{} {}\n'.format(path, errors))
 
