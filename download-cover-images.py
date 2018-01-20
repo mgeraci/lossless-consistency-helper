@@ -37,8 +37,8 @@ def get_name_list_from_filename(path):
     return res
 
 def download_image(folder, url):
-    destination = '{}cover.png'.format(folder)
-    print 'downloading {}'.format(destination)
+    destination = u'{}/cover.png'.format(folder)
+    print u'downloading {}'.format(destination)
 
     f = open(destination,'wb')
     f.write(requests.get(url).content)
