@@ -4,13 +4,13 @@ from PIL import Image
 import json
 import re
 import os
+from localsettings import MUSIC_LOCATION
 
 
 # "constants"
 # ------------------------------------------------------------------------------
 
 output_dir = os.path.dirname(os.path.realpath(__file__))
-music_location = '/Volumes/Lossless/Lossless'
 min_cover_dimension = 800
 
 
@@ -100,12 +100,12 @@ print 'x hey there x'
 print 'xxxxxxxxxxxxx'
 print ''
 
-os.chdir(music_location)
+os.chdir(MUSIC_LOCATION)
 
 print 'Checking for missing covers, poorly formatted album folders, and empty folders...'
 
-for root, dirnames, filenames in os.walk(music_location, topdown=True):
-    depth = get_depth(music_location, root)
+for root, dirnames, filenames in os.walk(MUSIC_LOCATION, topdown=True):
+    depth = get_depth(MUSIC_LOCATION, root)
 
     # depth 0 = lossless root
     # depth 1 = artist

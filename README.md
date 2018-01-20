@@ -27,6 +27,11 @@ a square of at least 800x800px (this can be modified in the script).
 * `brew install libjpeg` if you don't have libjpeg installed
 * `xcode-select --install` if you don't have the mac command-line tools install
 * `pip install -r requirements.txt`
+* add a file called `localsettings.py`, with the following information:
+
+```
+MUSIC_LOCATION = '/michaels/sick/tunez'
+```
 
 
 ## Running the script
