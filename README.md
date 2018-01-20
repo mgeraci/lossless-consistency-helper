@@ -39,4 +39,14 @@ LAST_FM_API_KEY = '[get your key from the last.fm developer portal]'
 
 First, make sure you're in the virtualenv for this project with
 `workon lossless-consistency-helper`. Then you can run the script with
-`./lossless-consistency-helper.py`. It will write the results to output.txt.
+`./lossless-consistency-helper.py`. It will write the results to
+lossless-consistency-helper-output.txt.
+
+Next, if you would like to automate the fetching of new cover images, you should
+run `./get-new-images.py lossless-consistency-helper-output.txt`. That will look
+for the image-related results of the previous script, then try searching the
+Last.FM API for a new image url.
+
+After that, you can run `./download-cover-images.py` to run through the previous
+script's results, and actually download the images. They'll get put into a
+directory in the folder called `covers`.
