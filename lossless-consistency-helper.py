@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from PIL import Image
+import json
 import re
 import os
 
@@ -145,16 +146,7 @@ for image in images:
 # ------------------------------------------------------------------------------
 
 with open('{}/output.txt'.format(output_dir), 'w') as f:
-    for section in res:
-        f.write('{}\n'.format(section))
-        f.write('----------------------------\n')
-        f.write('\n')
-
-        for path in sorted(res[section]):
-            errors = res[section][path]
-            f.write('{} {}\n'.format(path, errors))
-
-        f.write('\n')
+    json.dump(res, f)
 
 print ''
 print 'Done! Check your results in output.txt'
