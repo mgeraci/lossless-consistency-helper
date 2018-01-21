@@ -87,6 +87,8 @@ def check_image_size(image):
 # script
 # ------------------------------------------------------------------------------
 
+album_count = 0
+good_image_count = 0
 images = []
 res = {
     'albums': {},
@@ -117,6 +119,7 @@ for root, dirnames, filenames in os.walk(MUSIC_LOCATION, topdown=True):
             add_error_to_res('empty', root, 'Empty folder')
         else:
             for album in dirnames:
+                album_count += 1
                 album_check = check_album_folder(album)
 
                 if not album_check['success']:
@@ -138,7 +141,9 @@ print 'Checking the {} properly named images found for resolution and aspect rat
 for image in images:
     image_check = check_image_size(image)
 
-    if not image_check['success']:
+    if image_check['success']:
+        good_image_count += 1
+    else:
         add_error_to_res('images', image, image_check['error'])
 
 
@@ -150,5 +155,9 @@ with open('{}/lossless-consistency-helper-output.txt'.format(output_dir), 'w') a
 
 print ''
 print 'Done! Check your results in output.txt'
+print '{} albums found, {} good images found ({}%)'.format(
+    album_count,
+    good_image_count,
+    (float(good_image_count) / float(album_count)) * 100)
 print '<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3<3'
 print ''

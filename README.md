@@ -50,3 +50,6 @@ Last.FM API for a new image url.
 After that, you can run `./download-cover-images.py` to run through the previous
 script's results, and actually download the images. They'll get put into a
 directory in the folder called `covers`.
+
+And finally, run `./move-downloaded-images.py` to put the newly downloaded
+images into place.
