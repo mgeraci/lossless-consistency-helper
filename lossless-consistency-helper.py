@@ -11,7 +11,7 @@ from localsettings import MUSIC_LOCATION
 # ------------------------------------------------------------------------------
 
 output_dir = os.path.dirname(os.path.realpath(__file__))
-min_cover_dimension = 800
+min_cover_dimension = 500
 
 
 # helpers
@@ -37,19 +37,26 @@ def check_album_folder(path):
         }
 
 def check_for_cover(items):
-    success = False
+    res = []
 
     if 'cover.png' in items:
-        success = 'cover.png'
-    elif 'cover.jpg' in items:
-        success = 'cover.jpg'
-    elif 'cover.jpeg' in items:
-        success = 'cover.jpeg'
+        res.append('cover.png')
 
-    if success:
+    if 'cover.jpg' in items:
+        res.append('cover.jpg')
+
+    if 'cover.jpeg' in items:
+        res.append('cover.jpeg')
+
+    if len(res) > 1:
+        return {
+            'success': False,
+            'error': 'Multiple images found named "cover"'
+        }
+    if len(res) == 1:
         return {
             'success': True,
-            'filename': success,
+            'filename': res[0],
         }
     else:
         return {
@@ -69,8 +76,10 @@ def check_image_size(image):
 
     errors = []
 
+    '''
     if i.size[0] != i.size[1]:
         errors.append('Image not square')
+    '''
 
     if i.size[0] < min_cover_dimension or i.size[1] < min_cover_dimension:
         errors.append('Image too small')
@@ -83,6 +92,24 @@ def check_image_size(image):
     else:
         return { 'success': True }
 
+def check_for_song(filenames):
+    flac_files = [x for x in filenames if x.find('.flac') > 0]
+
+    # if there are no flac files, return success
+    if not len(flac_files):
+        return { 'success': True }
+
+    filename = flac_files[0]
+
+    # test for "artist - year - album - track - title"
+    if re.match(r'^.+? - \d{4} - .+? - \d+ - .+$', filename):
+        return { 'success': True }
+    else:
+        return {
+            'success': False,
+            'error': 'Bad song filename',
+        }
+
 
 # script
 # ------------------------------------------------------------------------------
@@ -94,6 +121,7 @@ res = {
     'albums': {},
     'empty': {},
     'images': {},
+    'songs': {},
 }
 
 print ''
@@ -134,6 +162,11 @@ for root, dirnames, filenames in os.walk(MUSIC_LOCATION, topdown=True):
             images.append('{}/{}'.format(root, has_cover_check['filename']))
         else:
             add_error_to_res('images', root, has_cover_check['error'])
+
+        has_good_song_filename_check = check_for_song(filenames)
+
+        if not has_good_song_filename_check['success']:
+            add_error_to_res('songs', root, has_good_song_filename_check['error'])
 
 
 print 'Checking the {} properly named images found for resolution and aspect ratio...'.format(len(images))
