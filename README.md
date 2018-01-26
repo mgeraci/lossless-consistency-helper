@@ -1,8 +1,8 @@
 # Lossless Consistency Helper
 
-This is a simple script to check my Flac music collection for consistency. I
-have a few requirements for how my music is named and organized, so this script
-outputs a list of items to fix.
+This is a set of simple scripts to check my Flac music collection for consistency.
+I have a few requirements for how my music is named and organized, so they output
+a list of items to fix.
 
 
 ## What it looks for
@@ -14,11 +14,11 @@ root
 |_ artist_name
    |_ album_year - album_title
       |_ cover.[png|jpg|jpeg]
-      |_ artist - year - album - tracknumber - songtitle
+      |_ artist_name - year - album_title - track_number - song_title
 ```
 
 Album year must be a 4-digit number. The cover must not be corrupt, and must be
-a square of at least 800x800px (this can be modified in the script).
+greater than a defined size (this can be modified in the script).
 
 
 ## Installation
@@ -30,7 +30,7 @@ a square of at least 800x800px (this can be modified in the script).
 * `pip install -r requirements.txt`
 * add a file called `localsettings.py`, with the following information:
 
-```
+```.py
 MUSIC_LOCATION = '/michaels/sick/tunez'
 LAST_FM_API_KEY = '[get your key from the last.fm developer portal]'
 ```
