@@ -92,14 +92,13 @@ def check_image_size(image):
     else:
         return { 'success': True }
 
-def check_for_song(filenames):
-    flac_files = [x for x in filenames if x.find('.flac') > 0]
+def check_song_naming(filename):
+    file_is_flac = filename.find('.flac') > 0
+    print 'checking {}, is flac: {}'.format(filename, file_is_flac)
 
     # if there are no flac files, return success
-    if not len(flac_files):
+    if not file_is_flac:
         return { 'success': True }
-
-    filename = flac_files[0]
 
     # test for "artist - year - album - track - title"
     if re.match(r'^.+? - \d{4} - .+? - \d+ - .+$', filename):
@@ -163,10 +162,16 @@ for root, dirnames, filenames in os.walk(MUSIC_LOCATION, topdown=True):
         else:
             add_error_to_res('images', root, has_cover_check['error'])
 
-        has_good_song_filename_check = check_for_song(filenames)
+        # check all flac files for proper naming
+        for filename in filenames:
+            has_good_song_filename_check = check_song_naming(filename)
 
-        if not has_good_song_filename_check['success']:
-            add_error_to_res('songs', root, has_good_song_filename_check['error'])
+            if not has_good_song_filename_check['success']:
+                add_error_to_res(
+                    'songs',
+                    '{}/{}'.format(root, filename),
+                    has_good_song_filename_check['error']
+                )
 
 
 print 'Checking the {} properly named images found for resolution and aspect ratio...'.format(len(images))

@@ -14,6 +14,7 @@ root
 |_ artist_name
    |_ album_year - album_title
       |_ cover.[png|jpg|jpeg]
+      |_ artist - year - album - tracknumber - songtitle
 ```
 
 Album year must be a 4-digit number. The cover must not be corrupt, and must be
